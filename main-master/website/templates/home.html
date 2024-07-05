@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LynxAI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('static/background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border-bottom: 1px solid #0056b3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header .title {
+            flex: 1;
+        }
+        .chat-header .logout-button {
+            background-color: #ffffff;
+            color: #007bff;
+            border: 1px solid #007bff;
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .chat-header .logout-button:hover {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+        .message-container {
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            background-color: #f7f9fc;
+        }
+        .message {
+            margin-bottom: 12px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 75%;
+            clear: both;
+            overflow-wrap: break-word;
+        }
+        .user-message {
+            background-color: #007bff;
+            color: #ffffff;
+            float: right;
+            border-bottom-right-radius: 0;
+        }
+        .bot-message {
+            background-color: #e9ecef;
+            color: #495057;
+            float: left;
+            border-bottom-left-radius: 0;
+        }
+        .message-form {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-top: 1px solid #dee2e6;
+            background-color: #ffffff;
+        }
+        .message-form input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 25px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .message-form input[type="text"]:focus {
+            border-color: #007bff;
+        }
+        .message-form button[type="submit"] {
+            padding: 10px 16px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+        }
+        .message-form button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="title">Lynx Bridge</div>
+            <button class="logout-button" onclick="window.location.href='/logout'">Logout</button>
+        </div>
+        <div class="message-container" id="chat-container">
+            <!-- Messages will be dynamically added here -->
+        </div>
+        
+        <form id="message-form" class="message-form">
+            <input type="text" id="message" name="message" placeholder="Type a message..." required autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('message-form');
+            const chatContainer = document.getElementById('chat-container');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const messageInput = document.getElementById('message');
+                const message = messageInput.value.trim();
+
+                if (message !== '') {
+                    appendMessage(message, 'user-message');
+                    sendMessage(message);
+                    messageInput.value = '';
+                }
+            });
+
+            function appendMessage(message, className) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', className);
+                messageElement.innerText = message;
+                chatContainer.appendChild(messageElement);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            function sendMessage(message) {
+                fetch('/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        appendMessage(data.message, 'bot-message');
+                    } else {
+                        console.error('Error:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error sending message:', error));
+            }
+        });
+    </script>
+</body>
+</html>
